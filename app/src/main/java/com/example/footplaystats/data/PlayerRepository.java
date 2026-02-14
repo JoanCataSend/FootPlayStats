@@ -1,9 +1,6 @@
 package com.example.footplaystats.data;
 
-import androidx.annotation.NonNull;
-
 import com.example.footplaystats.model.Player;
-import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
@@ -40,10 +37,15 @@ public class PlayerRepository {
 
                     List<Player> players = new ArrayList<>();
 
-                    for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                        Player player = dc.getDocument().toObject(Player.class);
-                        player.setId(dc.getDocument().getId());
-                        players.add(player);
+                    // 🔥 CAMBIO CLAVE → getDocuments()
+                    for (var doc : snapshots.getDocuments()) {
+
+                        Player player = doc.toObject(Player.class);
+
+                        if (player != null) {
+                            player.setId(doc.getId());
+                            players.add(player);
+                        }
                     }
 
                     callback.onPlayersLoaded(players);

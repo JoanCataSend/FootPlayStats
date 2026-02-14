@@ -6,6 +6,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.example.footplaystats.R;
 import com.example.footplaystats.databinding.ItemPlayerBinding;
 import com.example.footplaystats.model.Player;
 
@@ -46,10 +48,47 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.PlayerVi
 
         Player player = players.get(position);
 
-        holder.binding.textName.setText(player.getName());
+        // 🔹 Nombre
+        holder.binding.textName.setText(
+                player.getName() != null ? player.getName() : ""
+        );
+
+        // 🔹 Puntos
         holder.binding.textPoints.setText(
                 String.format("%.1f", player.getTotalPoints())
         );
+
+        // 🔹 Rol bonito
+        String role = player.getRole();
+        String roleText;
+
+        if ("GOALKEEPER".equals(role)) {
+            roleText = "Portero";
+        } else if ("FIELD".equals(role)) {
+            roleText = "Jugador de campo";
+        } else {
+            roleText = "";
+        }
+
+        holder.binding.textSub.setText(roleText);
+
+        // 🔹 Imagen desde Firebase
+        String imageUrl = player.getImageUrl();
+
+        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+
+            Glide.with(holder.binding.getRoot().getContext())
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_player_placeholder)
+                    .error(R.drawable.ic_player_placeholder)
+                    .centerCrop()
+                    .into(holder.binding.imageAvatar);
+
+        } else {
+            holder.binding.imageAvatar.setImageResource(
+                    R.drawable.ic_player_placeholder
+            );
+        }
 
         holder.binding.getRoot().setOnClickListener(v -> {
             if (listener != null) {
@@ -63,15 +102,11 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.PlayerVi
         return players != null ? players.size() : 0;
     }
 
-    /**
-     * Actualiza la lista completa (Firestore realtime)
-     */
     public void updateList(List<Player> newList) {
         if (newList != null) {
             this.players = newList;
             notifyDataSetChanged();
         }
-
     }
 
     static class PlayerViewHolder extends RecyclerView.ViewHolder {
@@ -83,5 +118,4 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.PlayerVi
             this.binding = binding;
         }
     }
-
 }
