@@ -43,11 +43,11 @@ public class LoginFragment extends Fragment {
 
         NavController navController = NavHostFragment.findNavController(this);
 
-        // Entrenador
+        // LOGIN ENTRENADOR
         binding.buttonLogin.setOnClickListener(v -> {
 
-            String username = binding.editTextUsername.getText().toString().trim();
-            String password = binding.editTextPassword.getText().toString().trim();
+            String username = binding.editEmail.getText().toString().trim();
+            String password = binding.editPassword.getText().toString().trim();
 
             if (TextUtils.isEmpty(username) || TextUtils.isEmpty(password)) {
                 Toast.makeText(requireContext(),
@@ -68,8 +68,8 @@ public class LoginFragment extends Fragment {
             }
         });
 
-        // Jugador
-        binding.buttonPlayerMode.setOnClickListener(v -> {
+        // CONTINUAR COMO JUGADOR (link inferior)
+        binding.textContinueAsPlayer.setOnClickListener(v -> {
 
             SessionManager.setRole(UserRole.PLAYER);
             navController.navigate(R.id.playerListFragment);
