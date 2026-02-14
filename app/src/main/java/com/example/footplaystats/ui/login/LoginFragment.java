@@ -43,11 +43,23 @@ public class LoginFragment extends Fragment {
 
         NavController navController = NavHostFragment.findNavController(this);
 
+        // 🔐 AUTO LOGIN SI YA HAY SESIÓN
+        UserRole role = SessionManager.getRole(requireContext());
+        if (role != null) {
+            navController.navigate(R.id.playerListFragment);
+            return;
+        }
+
         // LOGIN ENTRENADOR
         binding.buttonLogin.setOnClickListener(v -> {
 
-            String username = binding.editEmail.getText().toString().trim();
-            String password = binding.editPassword.getText().toString().trim();
+            String username = binding.editEmail.getText() != null
+                    ? binding.editEmail.getText().toString().trim()
+                    : "";
+
+            String password = binding.editPassword.getText() != null
+                    ? binding.editPassword.getText().toString().trim()
+                    : "";
 
             if (TextUtils.isEmpty(username) || TextUtils.isEmpty(password)) {
                 Toast.makeText(requireContext(),
@@ -58,7 +70,7 @@ public class LoginFragment extends Fragment {
 
             if (username.equals(ADMIN_USER) && password.equals(ADMIN_PASSWORD)) {
 
-                SessionManager.setRole(UserRole.COACH);
+                SessionManager.setRole(requireContext(), UserRole.COACH);
                 navController.navigate(R.id.playerListFragment);
 
             } else {
@@ -68,10 +80,10 @@ public class LoginFragment extends Fragment {
             }
         });
 
-        // CONTINUAR COMO JUGADOR (link inferior)
+        // CONTINUAR COMO JUGADOR
         binding.textContinueAsPlayer.setOnClickListener(v -> {
 
-            SessionManager.setRole(UserRole.PLAYER);
+            SessionManager.setRole(requireContext(), UserRole.PLAYER);
             navController.navigate(R.id.playerListFragment);
 
         });

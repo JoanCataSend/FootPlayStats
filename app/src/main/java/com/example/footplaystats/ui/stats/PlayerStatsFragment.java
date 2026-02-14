@@ -1,5 +1,6 @@
 package com.example.footplaystats.ui.stats;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,13 +13,20 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.footplaystats.R;
 import com.example.footplaystats.databinding.FragmentPlayerStatsBinding;
+import com.example.footplaystats.session.SessionManager;
+import com.github.mikephil.charting.charts.RadarChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.RadarData;
+import com.github.mikephil.charting.data.RadarDataSet;
+import com.github.mikephil.charting.data.RadarEntry;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Map;import com.github.mikephil.charting.formatter.ValueFormatter;
 
 public class PlayerStatsFragment extends Fragment {
 
@@ -59,7 +67,29 @@ public class PlayerStatsFragment extends Fragment {
             return;
         }
 
+        setupPermissions();
         loadPlayer();
+    }
+
+    private void setupPermissions() {
+
+        boolean isCoach = SessionManager.isCoach(requireContext());
+
+        if (isCoach) {
+            binding.buttonEdit.setVisibility(View.VISIBLE);
+
+            binding.buttonEdit.setOnClickListener(v -> {
+
+                Bundle bundle = new Bundle();
+                bundle.putString("playerId", playerId);
+
+                NavHostFragment.findNavController(this)
+                        .navigate(R.id.editPlayerFragment, bundle);
+            });
+
+        } else {
+            binding.buttonEdit.setVisibility(View.GONE);
+        }
     }
 
     private void loadPlayer() {
@@ -92,9 +122,19 @@ public class PlayerStatsFragment extends Fragment {
 
         List<CategoryItem> categoryList = new ArrayList<>();
 
+        String[] orderedCategories = {
+                "tecnica",
+                "tactica",
+                "fisico",
+                "psicologico"
+        };
+
+        List<Float> radarValues = new ArrayList<>();
+        List<String> radarLabels = new ArrayList<>();
+
         if (categoriesMap != null) {
 
-            for (String categoryName : categoriesMap.keySet()) {
+            for (String categoryName : orderedCategories) {
 
                 Map<String, Object> subStatsMap =
                         (Map<String, Object>) categoriesMap.get(categoryName);
@@ -112,7 +152,7 @@ public class PlayerStatsFragment extends Fragment {
 
                         subStats.add(
                                 new SubStatItem(
-                                        formatName(subName),
+                                        subName.replace("_", " "),
                                         value
                                 )
                         );
@@ -131,10 +171,14 @@ public class PlayerStatsFragment extends Fragment {
                                 subStats
                         )
                 );
+
+                radarValues.add((float) average);
+                radarLabels.add(capitalize(categoryName));
             }
         }
 
         setupRecycler(categoryList);
+        setupRadarChart(radarValues, radarLabels);
     }
 
     private void setupRecycler(List<CategoryItem> categories) {
@@ -148,13 +192,53 @@ public class PlayerStatsFragment extends Fragment {
         binding.recyclerCategories.setAdapter(adapter);
     }
 
+    private void setupRadarChart(List<Float> values, List<String> labels) {
+
+        RadarChart chart = binding.radarChart;
+
+        List<RadarEntry> entries = new ArrayList<>();
+        for (Float value : values) {
+            entries.add(new RadarEntry(value));
+        }
+
+        RadarDataSet dataSet = new RadarDataSet(entries, "Performance");
+        dataSet.setColor(Color.parseColor("#4CAF50"));
+        dataSet.setFillColor(Color.parseColor("#4CAF50"));
+        dataSet.setDrawFilled(true);
+        dataSet.setFillAlpha(180);
+        dataSet.setLineWidth(2f);
+
+        RadarData data = new RadarData(dataSet);
+        data.setDrawValues(false);
+
+        chart.setData(data);
+
+        XAxis xAxis = chart.getXAxis();
+
+        xAxis.setValueFormatter(new com.github.mikephil.charting.formatter.ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                int index = (int) value % labels.size();
+                return labels.get(index);
+            }
+        });
+        xAxis.setTextSize(12f);
+
+        chart.getDescription().setEnabled(false);
+        chart.getLegend().setEnabled(false);
+        chart.setWebLineWidth(1f);
+        chart.setWebColor(Color.GRAY);
+        chart.setWebLineWidthInner(1f);
+        chart.setWebColorInner(Color.LTGRAY);
+        chart.getYAxis().setAxisMinimum(0f);
+        chart.getYAxis().setAxisMaximum(100f);
+
+        chart.invalidate();
+    }
+
     private String capitalize(String text) {
         if (text == null || text.isEmpty()) return text;
         return text.substring(0, 1).toUpperCase() + text.substring(1);
-    }
-
-    private String formatName(String text) {
-        return text.replace("_", " ");
     }
 
     @Override
