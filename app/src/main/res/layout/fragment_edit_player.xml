@@ -3,21 +3,26 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/background_main">
 
+    <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:title="Editar jugador"
+        android:title="Edit Player"
+        android:titleTextColor="@color/text_primary"
         app:navigationIcon="@drawable/ic_close"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Scroll -->
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -29,35 +34,76 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <!-- Foto -->
-            <ImageView
-                android:id="@+id/imagePlayer"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_gravity="center"
-                android:src="@mipmap/ic_launcher"
-                android:contentDescription="Foto jugador"/>
-
-            <!-- Nombre -->
-            <com.google.android.material.textfield.TextInputLayout
+            <!-- Card contenedor -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:hint="Nombre">
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/card_background">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/editTextName"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="24dp">
 
-            <!-- Botón guardar -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonSave"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="Guardar cambios"/>
+                    <!-- Foto jugador -->
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/imagePlayer"
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:layout_gravity="center"
+                        android:src="@mipmap/ic_launcher"
+                        android:scaleType="centerCrop"
+                        app:shapeAppearanceOverlay="@style/CircleImage"
+                        android:contentDescription="Player photo"/>
+
+                    <!-- Espacio -->
+                    <Space
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"/>
+
+                    <!-- Nombre -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Player Name"
+                        app:boxCornerRadiusTopStart="16dp"
+                        app:boxCornerRadiusTopEnd="16dp"
+                        app:boxCornerRadiusBottomStart="16dp"
+                        app:boxCornerRadiusBottomEnd="16dp"
+                        app:boxStrokeColor="@color/primary_button">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editTextName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_primary"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Espacio grande -->
+                    <Space
+                        android:layout_width="match_parent"
+                        android:layout_height="32dp"/>
+
+                    <!-- Botón Guardar -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonSave"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:text="SAVE CHANGES"
+                        android:textAllCaps="true"
+                        android:textStyle="bold"
+                        android:textColor="@color/primary_button_text"
+                        app:backgroundTint="@color/primary_button"
+                        app:cornerRadius="28dp"/>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
