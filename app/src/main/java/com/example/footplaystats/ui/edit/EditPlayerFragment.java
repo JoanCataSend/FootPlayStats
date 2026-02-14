@@ -5,7 +5,6 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,6 +14,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.bumptech.glide.Glide;
+import com.example.footplaystats.R;
 import com.example.footplaystats.databinding.FragmentEditPlayerBinding;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -29,7 +30,6 @@ public class EditPlayerFragment extends Fragment {
     private FirebaseFirestore db;
     private String playerId;
 
-    // Guardaremos aquí los EditText dinámicos
     private Map<String, Map<String, TextInputEditText>> editFields = new HashMap<>();
 
     @Nullable
@@ -39,6 +39,8 @@ public class EditPlayerFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
 
         binding = FragmentEditPlayerBinding.inflate(inflater, container, false);
+        db = FirebaseFirestore.getInstance();
+
         return binding.getRoot();
     }
 
@@ -48,19 +50,17 @@ public class EditPlayerFragment extends Fragment {
 
         super.onViewCreated(view, savedInstanceState);
 
-        db = FirebaseFirestore.getInstance();
+        binding.buttonClose.setOnClickListener(v ->
+                NavHostFragment.findNavController(this).navigateUp()
+        );
 
         if (getArguments() != null) {
             playerId = getArguments().getString("playerId");
         }
 
-        binding.toolbar.setNavigationOnClickListener(v ->
-                NavHostFragment.findNavController(this).navigateUp()
-        );
-
         if (playerId == null) {
             Toast.makeText(requireContext(),
-                    "Error cargando jugador",
+                    getString(R.string.error_loading_player),
                     Toast.LENGTH_SHORT).show();
             return;
         }
@@ -70,20 +70,12 @@ public class EditPlayerFragment extends Fragment {
         binding.buttonSave.setOnClickListener(v -> saveChanges());
     }
 
-    // ---------------------------------------------------
-    // LOAD PLAYER
-    // ---------------------------------------------------
     private void loadPlayer() {
 
         db.collection("players")
                 .document(playerId)
                 .get()
-                .addOnSuccessListener(this::populateFields)
-                .addOnFailureListener(e ->
-                        Toast.makeText(requireContext(),
-                                "Error cargando datos",
-                                Toast.LENGTH_SHORT).show()
-                );
+                .addOnSuccessListener(this::populateFields);
     }
 
     private void populateFields(DocumentSnapshot doc) {
@@ -91,6 +83,14 @@ public class EditPlayerFragment extends Fragment {
         if (!doc.exists()) return;
 
         binding.editTextName.setText(doc.getString("name"));
+
+        String imageUrl = doc.getString("imageUrl");
+
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(this)
+                    .load(imageUrl)
+                    .into(binding.imagePlayer);
+        }
 
         Map<String, Object> categories =
                 (Map<String, Object>) doc.get("categories");
@@ -148,16 +148,13 @@ public class EditPlayerFragment extends Fragment {
         }
     }
 
-    // ---------------------------------------------------
-    // SAVE
-    // ---------------------------------------------------
     private void saveChanges() {
 
         String name = binding.editTextName.getText().toString().trim();
 
         if (TextUtils.isEmpty(name)) {
             Toast.makeText(requireContext(),
-                    "El nombre no puede estar vacío",
+                    getString(R.string.name_empty),
                     Toast.LENGTH_SHORT).show();
             return;
         }
@@ -202,15 +199,10 @@ public class EditPlayerFragment extends Fragment {
                 .update(updates)
                 .addOnSuccessListener(unused -> {
                     Toast.makeText(requireContext(),
-                            "Jugador actualizado",
+                            getString(R.string.player_updated),
                             Toast.LENGTH_SHORT).show();
                     NavHostFragment.findNavController(this).navigateUp();
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(requireContext(),
-                                "Error guardando cambios",
-                                Toast.LENGTH_SHORT).show()
-                );
+                });
     }
 
     @Override

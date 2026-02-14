@@ -1,3 +1,35 @@
 <resources>
     <string name="app_name">FootPlayStats</string>
+
+
+    <string name="logo_description">Logo de la aplicación</string>
+    <string name="login_welcome">Bienvenido</string>
+    <string name="login_subtitle">Inicia sesión para continuar</string>
+    <string name="login_username">Usuario</string>
+    <string name="login_password">Contraseña</string>
+    <string name="login_button">Iniciar Sesión</string>
+    <string name="login_continue_player">Continuar como jugador</string>
+
+
+
+    <string name="list_title">Jugadores</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="add_player">Añadir jugador</string>
+
+
+    <string name="player_name">Nombre del jugador</string>
+    <string name="save_changes">Guardar cambios</string>
+    <string name="stats_title">Estadísticas</string>
+    <string name="name_empty">El nombre no puede estar vacío</string>
+    <string name="player_updated">Jugador actualizado</string>
+    <string name="error_loading_player">Error cargando jugador</string>
+
+
+    <string name="position">Posición</string>
+    <string name="goalkeeper">Portero</string>
+    <string name="field_player">Jugador de campo</string>
+    <string name="create_player">Crear jugador</string>
+    <string name="player_created">Jugador creado correctamente</string>
+    <string name="error_creating_player">Error al crear jugador</string>
+    <string name="error_empty_name">Introduce el nombre del jugador</string>
 </resources>

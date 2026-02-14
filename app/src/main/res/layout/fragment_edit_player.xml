@@ -6,23 +6,24 @@
     android:layout_height="match_parent"
     android:background="@color/background_main">
 
-    <!-- Toolbar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:title="Edit Player"
-        android:titleTextColor="@color/text_primary"
-        app:navigationIcon="@drawable/ic_close"
+    <!-- X cerrar -->
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/buttonClose"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@drawable/ic_close"
+        android:padding="6dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="24dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintTop_toBottomOf="@id/buttonClose"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -52,10 +53,8 @@
                         android:layout_width="120dp"
                         android:layout_height="120dp"
                         android:layout_gravity="center"
-                        android:src="@mipmap/ic_launcher"
                         android:scaleType="centerCrop"
-                        app:shapeAppearanceOverlay="@style/CircleImage"
-                        android:contentDescription="Player photo"/>
+                        app:shapeAppearanceOverlay="@style/CircleImage"/>
 
                     <Space
                         android:layout_width="match_parent"
@@ -66,31 +65,24 @@
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Player Name"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        app:boxStrokeColor="@color/primary_button">
+                        android:hint="@string/player_name">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editTextName"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/text_primary"/>
+                            android:layout_height="wrap_content"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Título Estadísticas -->
+                    <!-- Título estadísticas -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Estadísticas"
+                        android:text="@string/stats_title"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="@color/text_primary"
                         android:layout_marginTop="24dp"/>
 
-                    <!-- Contenedor dinámico -->
                     <LinearLayout
                         android:id="@+id/containerCategories"
                         android:layout_width="match_parent"
@@ -102,12 +94,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="32dp"/>
 
-                    <!-- Guardar -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/buttonSave"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
-                        android:text="SAVE CHANGES"
+                        android:text="@string/save_changes"
                         android:textAllCaps="true"
                         android:textStyle="bold"
                         android:textColor="@color/primary_button_text"
@@ -116,7 +107,6 @@
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
         </LinearLayout>
     </ScrollView>
 

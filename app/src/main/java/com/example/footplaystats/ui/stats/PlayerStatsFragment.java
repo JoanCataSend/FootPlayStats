@@ -13,20 +13,21 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.bumptech.glide.Glide;
 import com.example.footplaystats.R;
 import com.example.footplaystats.databinding.FragmentPlayerStatsBinding;
 import com.example.footplaystats.session.SessionManager;
-import com.github.mikephil.charting.charts.RadarChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.RadarData;
 import com.github.mikephil.charting.data.RadarDataSet;
 import com.github.mikephil.charting.data.RadarEntry;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;import com.github.mikephil.charting.formatter.ValueFormatter;
+import java.util.Map;
 
 public class PlayerStatsFragment extends Fragment {
 
@@ -52,7 +53,8 @@ public class PlayerStatsFragment extends Fragment {
 
         db = FirebaseFirestore.getInstance();
 
-        binding.toolbar.setNavigationOnClickListener(v ->
+        // Botón cerrar (X)
+        binding.buttonClose.setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigateUp()
         );
 
@@ -60,36 +62,23 @@ public class PlayerStatsFragment extends Fragment {
             playerId = getArguments().getString("playerId");
         }
 
-        if (playerId == null) {
-            Toast.makeText(requireContext(),
-                    "Error cargando jugador",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        setupPermissions();
-        loadPlayer();
-    }
-
-    private void setupPermissions() {
-
-        boolean isCoach = SessionManager.isCoach(requireContext());
-
-        if (isCoach) {
+        // Mostrar botón editar SOLO si es coach
+        if (SessionManager.isCoach(requireContext())) {
             binding.buttonEdit.setVisibility(View.VISIBLE);
-
-            binding.buttonEdit.setOnClickListener(v -> {
-
-                Bundle bundle = new Bundle();
-                bundle.putString("playerId", playerId);
-
-                NavHostFragment.findNavController(this)
-                        .navigate(R.id.editPlayerFragment, bundle);
-            });
-
         } else {
             binding.buttonEdit.setVisibility(View.GONE);
         }
+
+        // Acción botón editar
+        binding.buttonEdit.setOnClickListener(v -> {
+            Bundle bundle = new Bundle();
+            bundle.putString("playerId", playerId);
+
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.editPlayerFragment, bundle);
+        });
+
+        loadPlayer();
     }
 
     private void loadPlayer() {
@@ -100,7 +89,7 @@ public class PlayerStatsFragment extends Fragment {
                 .addOnSuccessListener(this::parsePlayer)
                 .addOnFailureListener(e ->
                         Toast.makeText(requireContext(),
-                                "Error cargando datos",
+                                "Error loading player",
                                 Toast.LENGTH_SHORT).show()
                 );
     }
@@ -109,18 +98,34 @@ public class PlayerStatsFragment extends Fragment {
 
         if (!doc.exists()) return;
 
-        Double totalPoints = doc.getDouble("totalPoints");
+        // Nombre jugador
+        binding.textPlayerName.setText(doc.getString("name"));
 
+        // Total puntos
+        Double totalPoints = doc.getDouble("totalPoints");
         if (totalPoints != null) {
             binding.textTotalPoints.setText(
                     String.format("%.1f", totalPoints)
             );
         }
 
+        // Imagen jugador
+        String imageUrl = doc.getString("imageUrl");
+
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(this)
+                    .load(imageUrl)
+                    .into(binding.imageAvatar);
+        } else {
+            binding.imageAvatar.setImageResource(R.mipmap.ic_launcher);
+        }
+
         Map<String, Object> categoriesMap =
                 (Map<String, Object>) doc.get("categories");
 
         List<CategoryItem> categoryList = new ArrayList<>();
+        List<Float> radarValues = new ArrayList<>();
+        List<String> radarLabels = new ArrayList<>();
 
         String[] orderedCategories = {
                 "tecnica",
@@ -128,9 +133,6 @@ public class PlayerStatsFragment extends Fragment {
                 "fisico",
                 "psicologico"
         };
-
-        List<Float> radarValues = new ArrayList<>();
-        List<String> radarLabels = new ArrayList<>();
 
         if (categoriesMap != null) {
 
@@ -194,56 +196,40 @@ public class PlayerStatsFragment extends Fragment {
 
     private void setupRadarChart(List<Float> values, List<String> labels) {
 
-        RadarChart chart = binding.radarChart;
-
         List<RadarEntry> entries = new ArrayList<>();
         for (Float value : values) {
             entries.add(new RadarEntry(value));
         }
 
-        RadarDataSet dataSet = new RadarDataSet(entries, "Performance");
+        RadarDataSet dataSet = new RadarDataSet(entries, "");
         dataSet.setColor(Color.parseColor("#4CAF50"));
         dataSet.setFillColor(Color.parseColor("#4CAF50"));
         dataSet.setDrawFilled(true);
-        dataSet.setFillAlpha(180);
+        dataSet.setFillAlpha(160);
         dataSet.setLineWidth(2f);
 
         RadarData data = new RadarData(dataSet);
         data.setDrawValues(false);
 
-        chart.setData(data);
+        binding.radarChart.setData(data);
 
-        XAxis xAxis = chart.getXAxis();
-
-        xAxis.setValueFormatter(new com.github.mikephil.charting.formatter.ValueFormatter() {
+        XAxis xAxis = binding.radarChart.getXAxis();
+        xAxis.setValueFormatter(new ValueFormatter() {
             @Override
             public String getFormattedValue(float value) {
-                int index = (int) value % labels.size();
-                return labels.get(index);
+                return labels.get((int) value % labels.size());
             }
         });
-        xAxis.setTextSize(12f);
 
-        chart.getDescription().setEnabled(false);
-        chart.getLegend().setEnabled(false);
-        chart.setWebLineWidth(1f);
-        chart.setWebColor(Color.GRAY);
-        chart.setWebLineWidthInner(1f);
-        chart.setWebColorInner(Color.LTGRAY);
-        chart.getYAxis().setAxisMinimum(0f);
-        chart.getYAxis().setAxisMaximum(100f);
-
-        chart.invalidate();
+        binding.radarChart.getDescription().setEnabled(false);
+        binding.radarChart.getLegend().setEnabled(false);
+        binding.radarChart.getYAxis().setAxisMinimum(0f);
+        binding.radarChart.getYAxis().setAxisMaximum(100f);
+        binding.radarChart.invalidate();
     }
 
     private String capitalize(String text) {
         if (text == null || text.isEmpty()) return text;
         return text.substring(0, 1).toUpperCase() + text.substring(1);
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
     }
 }

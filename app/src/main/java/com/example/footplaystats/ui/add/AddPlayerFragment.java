@@ -25,6 +25,9 @@ public class AddPlayerFragment extends Fragment {
     private FragmentAddPlayerBinding binding;
     private FirebaseFirestore db;
 
+    private static final String DEFAULT_IMAGE_URL =
+            "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png";
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -33,7 +36,6 @@ public class AddPlayerFragment extends Fragment {
 
         binding = FragmentAddPlayerBinding.inflate(inflater, container, false);
         db = FirebaseFirestore.getInstance();
-
         return binding.getRoot();
     }
 
@@ -43,8 +45,8 @@ public class AddPlayerFragment extends Fragment {
 
         super.onViewCreated(view, savedInstanceState);
 
-        // Botón cerrar (X)
-        binding.toolbar.setNavigationOnClickListener(v ->
+        // X cerrar
+        binding.buttonClose.setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigateUp()
         );
 
@@ -57,7 +59,7 @@ public class AddPlayerFragment extends Fragment {
 
         if (TextUtils.isEmpty(name)) {
             Toast.makeText(requireContext(),
-                    "Introduce el nombre del jugador",
+                    getString(com.example.footplaystats.R.string.error_empty_name),
                     Toast.LENGTH_SHORT).show();
             return;
         }
@@ -66,31 +68,29 @@ public class AddPlayerFragment extends Fragment {
                 ? "GOALKEEPER"
                 : "FIELD";
 
-        // Generar categorías automáticamente
         Map<String, Object> categories = StatsGenerator.generateStats(role);
 
-        // Construir documento completo
         Map<String, Object> player = new HashMap<>();
         player.put("name", name);
         player.put("role", role);
         player.put("totalPoints", 0.0);
         player.put("createdAt", Timestamp.now());
         player.put("categories", categories);
+        player.put("imageUrl", DEFAULT_IMAGE_URL);
 
-        // Guardar en Firestore
         db.collection("players")
                 .add(player)
                 .addOnSuccessListener(documentReference -> {
 
                     Toast.makeText(requireContext(),
-                            "Jugador creado correctamente",
+                            getString(com.example.footplaystats.R.string.player_created),
                             Toast.LENGTH_SHORT).show();
 
                     NavHostFragment.findNavController(this).navigateUp();
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(requireContext(),
-                                "Error al crear jugador",
+                                getString(com.example.footplaystats.R.string.error_creating_player),
                                 Toast.LENGTH_SHORT).show()
                 );
     }
