@@ -1,9 +1,11 @@
 package com.example.footplaystats.ui.list;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,6 +18,7 @@ import com.example.footplaystats.databinding.FragmentPlayerListBinding;
 import com.example.footplaystats.model.Player;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -27,6 +30,8 @@ public class PlayerListFragment extends Fragment {
     private PlayersAdapter adapter;
     private FirebaseFirestore db;
     private ListenerRegistration registration;
+
+    private static final String TAG = "PlayerListFragment";
 
     @Nullable
     @Override
@@ -46,6 +51,16 @@ public class PlayerListFragment extends Fragment {
 
         db = FirebaseFirestore.getInstance();
 
+        setupRecycler();
+        setupAddButton();
+        listenPlayers();
+    }
+
+    // ---------------------------------------------------
+    // RECYCLER CONFIGURATION
+    // ---------------------------------------------------
+    private void setupRecycler() {
+
         adapter = new PlayersAdapter(new ArrayList<>(), player -> {
 
             Bundle bundle = new Bundle();
@@ -60,14 +75,35 @@ public class PlayerListFragment extends Fragment {
         );
 
         binding.recyclerPlayers.setAdapter(adapter);
-
-        listenPlayers();
     }
 
+    // ---------------------------------------------------
+    // ADD BUTTON
+    // ---------------------------------------------------
+    private void setupAddButton() {
+
+        binding.buttonAdd.setOnClickListener(v ->
+                NavHostFragment.findNavController(this)
+                        .navigate(R.id.addPlayerFragment)
+        );
+    }
+
+    // ---------------------------------------------------
+    // FIRESTORE LISTENER
+    // ---------------------------------------------------
     private void listenPlayers() {
 
         registration = db.collection("players")
+                .orderBy("createdAt", Query.Direction.DESCENDING)
                 .addSnapshotListener((snapshots, e) -> {
+
+                    if (e != null) {
+                        Log.e(TAG, "Firestore error", e);
+                        Toast.makeText(requireContext(),
+                                "Error loading players",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
 
                     if (snapshots == null) return;
 
@@ -77,7 +113,6 @@ public class PlayerListFragment extends Fragment {
 
                         Player player = doc.toObject(Player.class);
                         player.setId(doc.getId());
-
                         players.add(player);
                     }
 
