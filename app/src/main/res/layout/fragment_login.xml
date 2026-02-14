@@ -126,12 +126,10 @@
                 android:textColor="@color/text_secondary"
                 android:textStyle="bold"
                 android:layout_marginTop="24dp"
+                android:layout_gravity="center_horizontal"
                 android:clickable="true"
                 android:focusable="true"
-                android:foreground="?attr/selectableItemBackgroundBorderless"
-                app:layout_constraintTop_toBottomOf="@id/buttonLogin"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                android:foreground="?attr/selectableItemBackgroundBorderless"/>
 
         </LinearLayout>
 
