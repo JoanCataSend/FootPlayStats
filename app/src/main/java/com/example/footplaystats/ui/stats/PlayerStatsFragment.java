@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,16 +12,19 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.example.footplaystats.R;
 import com.example.footplaystats.databinding.FragmentPlayerStatsBinding;
-import com.example.footplaystats.session.SessionManager;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class PlayerStatsFragment extends Fragment {
 
     private FragmentPlayerStatsBinding binding;
+    private FirebaseFirestore db;
+    private String playerId;
 
     @Nullable
     @Override
@@ -38,72 +42,119 @@ public class PlayerStatsFragment extends Fragment {
 
         super.onViewCreated(view, savedInstanceState);
 
-        // Botón cerrar (X)
+        db = FirebaseFirestore.getInstance();
+
         binding.toolbar.setNavigationOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigateUp()
         );
 
-        // Mostrar botón modificar solo si es entrenador
-        if (SessionManager.isCoach()) {
-            binding.buttonEdit.setVisibility(View.VISIBLE);
+        if (getArguments() != null) {
+            playerId = getArguments().getString("playerId");
+        }
 
-            binding.buttonEdit.setOnClickListener(v ->
-                    NavHostFragment.findNavController(this)
-                            .navigate(R.id.editPlayerFragment)
+        if (playerId == null) {
+            Toast.makeText(requireContext(),
+                    "Error cargando jugador",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        loadPlayer();
+    }
+
+    private void loadPlayer() {
+
+        db.collection("players")
+                .document(playerId)
+                .get()
+                .addOnSuccessListener(this::parsePlayer)
+                .addOnFailureListener(e ->
+                        Toast.makeText(requireContext(),
+                                "Error cargando datos",
+                                Toast.LENGTH_SHORT).show()
+                );
+    }
+
+    private void parsePlayer(DocumentSnapshot doc) {
+
+        if (!doc.exists()) return;
+
+        Double totalPoints = doc.getDouble("totalPoints");
+
+        if (totalPoints != null) {
+            binding.textTotalPoints.setText(
+                    String.format("%.1f", totalPoints)
             );
         }
 
-        setupRecycler();
+        Map<String, Object> categoriesMap =
+                (Map<String, Object>) doc.get("categories");
+
+        List<CategoryItem> categoryList = new ArrayList<>();
+
+        if (categoriesMap != null) {
+
+            for (String categoryName : categoriesMap.keySet()) {
+
+                Map<String, Object> subStatsMap =
+                        (Map<String, Object>) categoriesMap.get(categoryName);
+
+                List<SubStatItem> subStats = new ArrayList<>();
+                double sum = 0;
+                int count = 0;
+
+                if (subStatsMap != null) {
+
+                    for (String subName : subStatsMap.keySet()) {
+
+                        Double value =
+                                ((Number) subStatsMap.get(subName)).doubleValue();
+
+                        subStats.add(
+                                new SubStatItem(
+                                        formatName(subName),
+                                        value
+                                )
+                        );
+
+                        sum += value;
+                        count++;
+                    }
+                }
+
+                double average = count > 0 ? sum / count : 0;
+
+                categoryList.add(
+                        new CategoryItem(
+                                capitalize(categoryName),
+                                average,
+                                subStats
+                        )
+                );
+            }
+        }
+
+        setupRecycler(categoryList);
     }
 
-    private void setupRecycler() {
+    private void setupRecycler(List<CategoryItem> categories) {
 
-        List<CategoryItem> dummyCategories = new ArrayList<>();
-
-        // ⚽ Técnica
-        List<SubStatItem> tecnica = new ArrayList<>();
-        tecnica.add(new SubStatItem("Pases Cortos", 8.5));
-        tecnica.add(new SubStatItem("Regate", 7.9));
-        tecnica.add(new SubStatItem("Remate", 8.1));
-
-        dummyCategories.add(
-                new CategoryItem("⚽ Técnica", 8.2, tecnica)
-        );
-
-        // 🧠 Táctica
-        List<SubStatItem> tactica = new ArrayList<>();
-        tactica.add(new SubStatItem("Toma de decisiones", 8.3));
-        tactica.add(new SubStatItem("Posicionamiento", 7.8));
-
-        dummyCategories.add(
-                new CategoryItem("🧠 Táctica", 7.9, tactica)
-        );
-
-        // 🏃 Físico
-        List<SubStatItem> fisico = new ArrayList<>();
-        fisico.add(new SubStatItem("Velocidad", 8.6));
-        fisico.add(new SubStatItem("Resistencia", 8.4));
-
-        dummyCategories.add(
-                new CategoryItem("🏃 Físico", 8.6, fisico)
-        );
-
-        // 🧘 Psicológico
-        List<SubStatItem> psicologico = new ArrayList<>();
-        psicologico.add(new SubStatItem("Concentración", 8.2));
-        psicologico.add(new SubStatItem("Confianza", 8.0));
-
-        dummyCategories.add(
-                new CategoryItem("🧘 Psicológico", 8.1, psicologico)
-        );
-
-        CategoryAdapter adapter = new CategoryAdapter(dummyCategories);
+        CategoryAdapter adapter = new CategoryAdapter(categories);
 
         binding.recyclerCategories.setLayoutManager(
                 new LinearLayoutManager(requireContext())
         );
 
         binding.recyclerCategories.setAdapter(adapter);
+    }
+
+    private String capitalize(String text) {
+        if (text == null || text.isEmpty()) return text;
+        return text.substring(0, 1).toUpperCase() + text.substring(1);
+    }
+
+    private String formatName(String text) {
+        return text.replace("_", " ");
     }
 
     @Override

@@ -10,8 +10,8 @@
         android:label="Login" />
 
     <fragment
-        android:id="@+id/playersListFragment"
-        android:name="com.example.footplaystats.ui.players.PlayersListFragment"
+        android:id="@+id/playerListFragment"
+        android:name="com.example.footplaystats.ui.list.PlayerListFragment"
         android:label="Players List" />
 
     <fragment

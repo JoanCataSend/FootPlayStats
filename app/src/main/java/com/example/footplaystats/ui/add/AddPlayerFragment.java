@@ -13,10 +13,17 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.footplaystats.databinding.FragmentAddPlayerBinding;
+import com.example.footplaystats.data.StatsGenerator;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class AddPlayerFragment extends Fragment {
 
     private FragmentAddPlayerBinding binding;
+    private FirebaseFirestore db;
 
     @Nullable
     @Override
@@ -25,6 +32,8 @@ public class AddPlayerFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
 
         binding = FragmentAddPlayerBinding.inflate(inflater, container, false);
+        db = FirebaseFirestore.getInstance();
+
         return binding.getRoot();
     }
 
@@ -34,29 +43,56 @@ public class AddPlayerFragment extends Fragment {
 
         super.onViewCreated(view, savedInstanceState);
 
-        // Botón cerrar
+        // Botón cerrar (X)
         binding.toolbar.setNavigationOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigateUp()
         );
 
-        // Botón crear jugador
-        binding.buttonCreate.setOnClickListener(v -> {
+        binding.buttonCreate.setOnClickListener(v -> createPlayer());
+    }
 
-            String name = binding.editTextName.getText().toString().trim();
+    private void createPlayer() {
 
-            if (TextUtils.isEmpty(name)) {
-                Toast.makeText(requireContext(),
-                        "Introduce el nombre del jugador",
-                        Toast.LENGTH_SHORT).show();
-                return;
-            }
+        String name = binding.editTextName.getText().toString().trim();
 
+        if (TextUtils.isEmpty(name)) {
             Toast.makeText(requireContext(),
-                    "Jugador creado (simulado)",
+                    "Introduce el nombre del jugador",
                     Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-            NavHostFragment.findNavController(this).navigateUp();
-        });
+        String role = binding.radioGoalkeeper.isChecked()
+                ? "GOALKEEPER"
+                : "FIELD";
+
+        // Generar categorías automáticamente
+        Map<String, Object> categories = StatsGenerator.generateStats(role);
+
+        // Construir documento completo
+        Map<String, Object> player = new HashMap<>();
+        player.put("name", name);
+        player.put("role", role);
+        player.put("totalPoints", 0.0);
+        player.put("createdAt", Timestamp.now());
+        player.put("categories", categories);
+
+        // Guardar en Firestore
+        db.collection("players")
+                .add(player)
+                .addOnSuccessListener(documentReference -> {
+
+                    Toast.makeText(requireContext(),
+                            "Jugador creado correctamente",
+                            Toast.LENGTH_SHORT).show();
+
+                    NavHostFragment.findNavController(this).navigateUp();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(requireContext(),
+                                "Error al crear jugador",
+                                Toast.LENGTH_SHORT).show()
+                );
     }
 
     @Override

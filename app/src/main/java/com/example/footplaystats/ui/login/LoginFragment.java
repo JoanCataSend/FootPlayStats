@@ -59,7 +59,7 @@ public class LoginFragment extends Fragment {
             if (username.equals(ADMIN_USER) && password.equals(ADMIN_PASSWORD)) {
 
                 SessionManager.setRole(UserRole.COACH);
-                navController.navigate(R.id.playersListFragment);
+                navController.navigate(R.id.playerListFragment);
 
             } else {
                 Toast.makeText(requireContext(),
@@ -72,7 +72,7 @@ public class LoginFragment extends Fragment {
         binding.buttonPlayerMode.setOnClickListener(v -> {
 
             SessionManager.setRole(UserRole.PLAYER);
-            navController.navigate(R.id.playersListFragment);
+            navController.navigate(R.id.playerListFragment);
 
         });
     }

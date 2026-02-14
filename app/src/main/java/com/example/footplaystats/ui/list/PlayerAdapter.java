@@ -1,6 +1,7 @@
-package com.example.footplaystats.ui.players;
+package com.example.footplaystats.ui.list;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -11,12 +12,18 @@ import com.example.footplaystats.model.Player;
 
 import java.util.List;
 
-public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.PlayerViewHolder> {
+public class PlayerAdapter extends RecyclerView.Adapter<PlayerAdapter.PlayerViewHolder> {
+
+    public interface OnPlayerClickListener {
+        void onPlayerClick(Player player);
+    }
 
     private final List<Player> players;
+    private final OnPlayerClickListener listener;
 
-    public PlayersAdapter(List<Player> players) {
+    public PlayerAdapter(List<Player> players, OnPlayerClickListener listener) {
         this.players = players;
+        this.listener = listener;
     }
 
     @NonNull
@@ -39,7 +46,12 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.PlayerVi
 
         holder.binding.textName.setText(player.getName());
         holder.binding.textPoints.setText(String.valueOf(player.getTotalPoints()));
+
+        holder.binding.getRoot().setOnClickListener(v ->
+                listener.onPlayerClick(player)
+        );
     }
+
 
     @Override
     public int getItemCount() {
@@ -50,9 +62,10 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.PlayerVi
 
         ItemPlayerBinding binding;
 
-        public PlayerViewHolder(ItemPlayerBinding binding) {
+        PlayerViewHolder(ItemPlayerBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
     }
+
 }
