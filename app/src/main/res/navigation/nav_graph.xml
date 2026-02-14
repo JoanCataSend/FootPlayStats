@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.footplaystats.ui.login.LoginFragment"
+        android:label="Login" />
+
+    <fragment
+        android:id="@+id/playersListFragment"
+        android:name="com.example.footplaystats.ui.players.PlayersListFragment"
+        android:label="Players List" />
+
+    <fragment
+        android:id="@+id/playerStatsFragment"
+        android:name="com.example.footplaystats.ui.stats.PlayerStatsFragment"
+        android:label="Player Stats" />
+
+    <fragment
+        android:id="@+id/editPlayerFragment"
+        android:name="com.example.footplaystats.ui.edit.EditPlayerFragment"
+        android:label="Edit Player" />
+
+    <fragment
+        android:id="@+id/addPlayerFragment"
+        android:name="com.example.footplaystats.ui.add.AddPlayerFragment"
+        android:label="Add Player" />
+
+</navigation>
