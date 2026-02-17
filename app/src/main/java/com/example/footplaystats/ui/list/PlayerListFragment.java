@@ -297,6 +297,15 @@ public class PlayerListFragment extends Fragment {
 
         String name = player.getName() != null ? player.getName() : "";
         binding.textTopName.setText(name);
+        String role = player.getRole();
+
+        if ("GOALKEEPER".equals(role)) {
+            binding.textTopRole.setText("Portero");
+        } else if ("FIELD".equals(role)) {
+            binding.textTopRole.setText("Jugador de campo");
+        } else {
+            binding.textTopRole.setText("");
+        }
 
         // 🔥 ACTIVAR BADGE TOP
         binding.topBadge.setVisibility(View.VISIBLE);
