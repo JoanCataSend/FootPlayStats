@@ -1,9 +1,11 @@
 package com.example.footplaystats.ui.list;
 
+import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -30,6 +32,13 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.PlayerVi
         this.listener = listener;
     }
 
+    public Player getPlayerAt(int position) {
+        if (position >= 0 && position < players.size()) {
+            return players.get(position);
+        }
+        return null;
+    }
+
     @NonNull
     @Override
     public PlayerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -48,31 +57,30 @@ public class PlayersAdapter extends RecyclerView.Adapter<PlayersAdapter.PlayerVi
 
         Player player = players.get(position);
 
-        // 🔹 Nombre
         holder.binding.textName.setText(
                 player.getName() != null ? player.getName() : ""
         );
 
-        // 🔹 Puntos
-        holder.binding.textPoints.setText(
-                String.format("%.1f", player.getTotalPoints())
-        );
+        long pointsRounded = Math.round(player.getTotalPoints());
+        holder.binding.textPoints.setText(String.valueOf(pointsRounded));
 
-        // 🔹 Rol bonito
-        String role = player.getRole();
-        String roleText;
+        int colorRes;
 
-        if ("GOALKEEPER".equals(role)) {
-            roleText = "Portero";
-        } else if ("FIELD".equals(role)) {
-            roleText = "Jugador de campo";
+        if (pointsRounded < 50) {
+            colorRes = R.color.score_red;
+        } else if (pointsRounded < 70) {
+            colorRes = R.color.score_orange;
         } else {
-            roleText = "";
+            colorRes = R.color.score_green;
         }
 
-        holder.binding.textSub.setText(roleText);
+        GradientDrawable background =
+                (GradientDrawable) holder.binding.textPoints.getBackground().mutate();
 
-        // 🔹 Imagen desde Firebase
+        background.setColor(
+                ContextCompat.getColor(holder.binding.getRoot().getContext(), colorRes)
+        );
+
         String imageUrl = player.getImageUrl();
 
         if (imageUrl != null && !imageUrl.trim().isEmpty()) {

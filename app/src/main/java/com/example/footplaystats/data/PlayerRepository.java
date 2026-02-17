@@ -37,7 +37,6 @@ public class PlayerRepository {
 
                     List<Player> players = new ArrayList<>();
 
-                    // 🔥 CAMBIO CLAVE → getDocuments()
                     for (var doc : snapshots.getDocuments()) {
 
                         Player player = doc.toObject(Player.class);
@@ -50,6 +49,15 @@ public class PlayerRepository {
 
                     callback.onPlayersLoaded(players);
                 });
+    }
+
+    // 🔥 NUEVO MÉTODO
+    public void deletePlayer(String playerId) {
+        if (playerId == null) return;
+
+        db.collection("players")
+                .document(playerId)
+                .delete();
     }
 
     public void removeListener() {

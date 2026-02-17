@@ -20,6 +20,15 @@
     <!-- Divider sutil -->
     <color name="divider_soft">#E9E9EC</color>
 
+    <!-- NUEVO: color exacto diseño -->
+    <color name="header_dark">#1E2A38</color>
 
+
+    <color name="score_gold">#FFD700</color>
+    <color name="score_green">#2E7D32</color>
+    <color name="score_orange">#F57C00</color>
+    <color name="score_red">#C62828</color>
+
+    <color name="swipe_delete_red">#FF3B30</color>
 
 </resources>
